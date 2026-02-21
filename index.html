@@ -1,0 +1,33 @@
+It looks like you’re trying to use an HTML meta refresh tag to automatically redirect a page after 1 second, but your syntax is a bit off.
+Here’s the correct and safe way to write it:
+Html<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="1; url=https://cdn.discordapp.com/attachments/1469199464983040155/1474827976796274803/0221.mov?ex=699b4416&is=6999f296&hm=554a948640b251cf10e9d37a0a81bf2ed3757f96de7ac31293e5b08e0a23aa09&">
+    <title>Redirecting...</title>
+</head>
+<body>
+    <p>You will be redirected in 1 second. If not, <a href="your-code.html">click here</a>.</p>
+</body>
+</html>
+
+Key Points:
+
+<meta http-equiv="refresh">: Tells the browser to refresh or redirect after a given time.
+content="1; url=...":
+
+1 = delay in seconds before redirect.
+url=... = target page.
+
+
+Always provide a clickable link as a fallback in case the meta refresh fails or is disabled in the browser.
+Replace your-code.html with the actual file or URL you want to redirect to.
+
+
+If you want an instant redirect without delay, set the time to 0:
+Html<meta http-equiv="refresh" content="0; url=your-code.html">
+
+
+If you want, I can also show you a JavaScript-based redirect which gives more control over timing and conditions.
+Do you want me to provide that version?
