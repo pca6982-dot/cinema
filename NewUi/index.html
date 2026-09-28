@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aura</title>
+    <script src="aura-bridge.js"></script>
+    <script type="module" crossorigin src="index.js"></script>
+    <link rel="stylesheet" crossorigin href="index.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      // ks om ia3x lol
+      window.__pendingDuiMessages = window.__pendingDuiMessages || [];
+      window.__loadingUiMounted = false;
+      window.addEventListener("message", function (event) {
+        if (window.__loadingUiMounted) return;
+        var data = event && event.data;
+        if (!data || !data.action) return;
+        var loadingActions = {
+          showLoading: 1,
+          updateLoading: 1,
+          showReady: 1,
+          updateReadyCursor: 1,
+          hideLoading: 1,
+          showError: 1,
+          openKeySelection: 1,
+          updateKeySelection: 1,
+          closeKeySelection: 1,
+        };
+        if (loadingActions[data.action]) {
+          window.__pendingDuiMessages.push(data);
+        }
+      });
+    </script>
+  </body>
+</html>
