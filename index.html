@@ -912,15 +912,17 @@ i.menu-category-icon.fas.svelte-1ysny0v.svelte-1ysny0v {
   gap: 6px;
 }
 .footer-brand img.aura-ds-av {
-  width: 14px;
-  height: 14px;
-  min-width: 14px;
-  min-height: 14px;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
   flex-shrink: 0;
-  margin-right: 6px;
+  margin-right: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
 }
 .footer-shortcut.svelte-1ysny0v.svelte-1ysny0v {
   color: #ffffff8c;
@@ -6192,8 +6194,8 @@ function no(n) {
   };
 }
 const io = 0.35,
-  $t = "discord.gg/4s",
-  so = "4s";
+  $t = "4s menu",
+  so = "4s menu";
 function oo(n) {
   return !Array.isArray(n) || n.length === 0
     ? ""
@@ -6904,8 +6906,7 @@ function uo(n, e, t) {
                 const url = window.__AURA_DISCORD_AVATAR || av;
                 if (url) {
                   img.src = url;
-                  img.style.cssText =
-                    "width:14px;height:14px;min-width:14px;min-height:14px;border-radius:50%;object-fit:cover;flex-shrink:0;display:block;margin-right:6px";
+                  img.style.cssText = "width:22px;height:22px;min-width:22px;min-height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;display:block;margin-right:8px;border:1px solid rgba(255,255,255,0.25);box-shadow:0 0 6px rgba(0,0,0,0.4);";
                 } else img.style.display = "none";
               });
             };
