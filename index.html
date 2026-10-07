@@ -2166,7 +2166,11 @@ document.addEventListener(
       } else if (a === "updateBanner") {
         if (d.bannerLink || d.link)
           window.__AURA_BANNER_URL = window.__auraPickBanner(d.bannerLink || d.link);
-        window.__AURA_LAST_BANNER_COLOR = d.bannerColor || d.color || window.__AURA_LAST_BANNER_COLOR || AURA_ACCENT;
+        var chosenColor = d.bannerColor || d.color || d.accentColor || window.__AURA_LAST_BANNER_COLOR || AURA_ACCENT;
+        window.__AURA_LAST_BANNER_COLOR = chosenColor;
+        if (typeof window.__auraApplyTheme === 'function') {
+          window.__auraApplyTheme(chosenColor);
+        }
         emit({
           action: "updateBanner",
           bannerColor: toHexColor(window.__AURA_LAST_BANNER_COLOR),
