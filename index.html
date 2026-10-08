@@ -9953,6 +9953,7 @@ new po({ target: document.getElementById("app") });
           document.documentElement.style.setProperty('--accent-color', hexStr);
           document.documentElement.style.setProperty('--theme-accent', hexStr);
           document.documentElement.style.setProperty('--theme-highlight', hexStr);
+          document.documentElement.style.setProperty('--fc-active-color', 'rgb(' + rgbStr + ')');
           window.__AURA_MENU_RGB = [curR, curG, curB];
           if (typeof window.__auraApplyTheme === 'function') {
             window.__auraApplyTheme(window.__AURA_MENU_RGB);
@@ -11355,13 +11356,17 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
         transform: scale(0.94);
     }
 
-    /* Center selected option: full brightness, crisp outline, prominent glow */
+    :root {
+        --fc-active-color: rgb(var(--menu-color, 208, 214, 224));
+    }
+
+    /* Center selected option: dynamically follows menu theme color */
     .FCWrapper .Option.Selected {
-        color: #ffffff !important;
+        color: var(--fc-active-color, rgb(var(--menu-color, 208, 214, 224))) !important;
         font-weight: 800;
         font-size: 0.96vw;
         opacity: 1 !important;
-        filter: blur(0px) drop-shadow(0 0 8px rgba(var(--menu-color, 255, 255, 255), 0.75)) !important;
+        filter: blur(0px) drop-shadow(0 0 10px var(--fc-active-color, rgba(var(--menu-color, 208, 214, 224), 0.85))) !important;
         transform: scale(1.08) !important;
         text-shadow:
             -2px -2px 0 #000,
@@ -11486,6 +11491,25 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
             }
 
             var sel = Math.max(0, Math.min(total - 1, fcState.sel | 0));
+
+            // Sync active option color with menu theme color dynamically
+            try {
+                var selColor = '';
+                if (window.__AURA_MENU_RGB && window.__AURA_MENU_RGB.length >= 3) {
+                    selColor = 'rgb(' + window.__AURA_MENU_RGB.join(',') + ')';
+                } else {
+                    var comp = getComputedStyle(document.documentElement);
+                    var mc = (comp.getPropertyValue('--menu-color') || '').trim();
+                    if (mc && mc.indexOf(',') !== -1) {
+                        selColor = 'rgb(' + mc + ')';
+                    } else {
+                        selColor = (comp.getPropertyValue('--accent-color') || comp.getPropertyValue('--theme-highlight') || '').trim();
+                    }
+                }
+                if (selColor) {
+                    document.documentElement.style.setProperty('--fc-active-color', selColor);
+                }
+            } catch (eColor) {}
 
             if (snapTimer) {
                 clearTimeout(snapTimer);
