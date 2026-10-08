@@ -11226,10 +11226,13 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
 
     <!-- ==========================================================================
          SHARK FREECAM UI (Adapted from menu_core_shark)
-         5-Item Rolling Window: 2 Above, 1 Selected in Center, 2 Below
+         Silky-Smooth Sliding Track: 2 Above, 1 Center (Selected), 2 Below
+         High-contrast, reduced transparency for bright daylight & desert terrain
          ========================================================================== -->
     <img class="Crosshair" id="fcCrosshair" src="https://www.pngall.com/wp-content/uploads/14/Crosshair-PNG-Image.png" draggable="false" style="display: none;">
-    <div class="FCWrapper" id="fcWrapper" style="display: none;"></div>
+    <div class="FCWrapper" id="fcWrapper" style="display: none;">
+        <div class="FCTrack" id="fcTrack"></div>
+    </div>
 
     <style>
     /* Suppress old Svelte freecam container */
@@ -11258,17 +11261,16 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
         display: flex;
         left: 50%;
         bottom: 10vw;
-        max-height: 14vw;
+        height: 11.9vw;
+        max-height: 11.9vw;
+        width: 34vw;
         transform: translate(-50%) scale(0.88);
         transform-origin: bottom center;
         justify-content: flex-start;
         align-items: center;
         flex-direction: column;
         font-family: inherit;
-        gap: .32vw;
-        overflow: visible;
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
+        overflow: hidden;
         pointer-events: none;
         z-index: 99998;
     }
@@ -11295,6 +11297,15 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
         }
     }
 
+    .FCWrapper .FCTrack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        transition: transform 0.22s cubic-bezier(0.2, 0, 0.1, 1);
+        will-change: transform;
+    }
+
     .FCWrapper .Option {
         position: relative;
         display: flex;
@@ -11304,54 +11315,65 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
         width: 100%;
         min-width: 24vw;
         max-width: 34vw;
+        height: 2.1vw;
+        box-sizing: border-box;
+        margin: 0.14vw 0;
         font-size: 0.86vw;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: .012vw;
-        color: rgba(255, 255, 255, 0.45);
+        color: #ffffff !important;
         white-space: nowrap;
-        opacity: 0.22 !important;
-        filter: blur(0.45px);
+        opacity: 0.65 !important;
         transform: scale(0.92);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        text-shadow:
+            -1.5px -1.5px 0 #000,
+             1.5px -1.5px 0 #000,
+            -1.5px  1.5px 0 #000,
+             1.5px  1.5px 0 #000,
+            -2px    0px   0 #000,
+             2px    0px   0 #000,
+             0px   -2px   0 #000,
+             0px    2px   0 #000,
+             0 2px 4px rgba(0, 0, 0, 0.95),
+             0 0 6px #000 !important;
         transition: opacity 0.22s ease-out, filter 0.22s ease-out, transform 0.22s cubic-bezier(0.2, 0, 0.1, 1), color 0.22s ease-out, text-shadow 0.22s ease-out !important;
         text-rendering: geometricPrecision;
         -webkit-font-smoothing: subpixel-antialiased;
-        -moz-osx-font-smoothing: auto;
         font-smooth: always;
-        -webkit-text-stroke: 0.01px transparent;
         will-change: opacity, filter, transform, color;
     }
 
-    /* Furthest options (2 above / 2 below): lower opacity for depth */
+    /* Outermost visible options in 5-slot window (offset +/-2) */
     .FCWrapper .Option.Option-far {
-        opacity: 0.16 !important;
+        opacity: 0.50 !important;
         transform: scale(0.88);
     }
 
-    /* Near options (1 above / 1 below) */
+    /* Immediate neighbors (offset +/-1) */
     .FCWrapper .Option.Option-near {
-        opacity: 0.26 !important;
+        opacity: 0.72 !important;
         transform: scale(0.94);
     }
 
+    /* Center selected option: full brightness, crisp outline, prominent glow */
     .FCWrapper .Option.Selected {
         color: #ffffff !important;
         font-weight: 800;
-        font-size: 0.94vw;
+        font-size: 0.96vw;
         opacity: 1 !important;
-        filter: blur(0px) drop-shadow(0 0 8px rgba(255, 255, 255, 0.55)) !important;
+        filter: blur(0px) drop-shadow(0 0 8px rgba(var(--menu-color, 255, 255, 255), 0.75)) !important;
         transform: scale(1.08) !important;
         text-shadow:
-            0.5px 0.5px 3px rgba(0, 0, 0, 0.95),
-            0 0 6px rgba(0, 0, 0, 0.9),
-            0 0 10px rgba(0, 0, 0, 0.85),
-            0 1px 5px rgba(0, 0, 1),
-            -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000 !important;
-        text-rendering: geometricPrecision;
-        -webkit-font-smoothing: subpixel-antialiased;
-        -moz-osx-font-smoothing: auto;
-        font-smooth: always;
-        -webkit-text-stroke: 0.01px transparent;
+            -2px -2px 0 #000,
+             2px -2px 0 #000,
+            -2px  2px 0 #000,
+             2px  2px 0 #000,
+            -2px  0px  0 #000,
+             2px  0px  0 #000,
+             0px -2px  0 #000,
+             0px  2px  0 #000,
+             0 2px 6px rgba(0, 0, 0, 1),
+             0 0 10px rgba(0, 0, 0, 0.9) !important;
         transition: opacity 0.22s ease-out, filter 0.22s ease-out, transform 0.22s cubic-bezier(0.2, 0, 0.1, 1), color 0.22s ease-out, text-shadow 0.22s ease-out !important;
     }
 
@@ -11362,14 +11384,12 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
         -webkit-text-fill-color: #ffffff !important;
         font-weight: 700 !important;
         text-shadow:
-            0.5px 0.5px 2px rgba(0, 0, 0, 0.9),
-            0 0 5px rgba(0, 0, 0, 0.85),
-            0 0 8px rgba(0, 0, 0, 0.75),
-            0 0.5px 3px rgba(0, 0, 0, 0.95) !important;
+            -1.5px -1.5px 0 #000,
+             1.5px -1.5px 0 #000,
+            -1.5px  1.5px 0 #000,
+             1.5px  1.5px 0 #000,
+             0 0 6px rgba(0, 0, 0, 0.9) !important;
         transition: text-shadow 0.55s cubic-bezier(0.2, 0, 0.1, 1) !important;
-        text-rendering: geometricPrecision !important;
-        -webkit-font-smoothing: subpixel-antialiased !important;
-        font-smooth: always !important;
     }
 
     .FCWrapper .Option .FCdash,
@@ -11378,14 +11398,12 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
         -webkit-text-fill-color: #ffffff !important;
         font-weight: 700 !important;
         text-shadow:
-            0.5px 0.5px 2px rgba(0, 0, 0, 0.9),
-            0 0 5px rgba(0, 0, 0, 0.85),
-            0 0 8px rgba(0, 0, 0, 0.75),
-            0 0.5px 3px rgba(0, 0, 0, 0.95) !important;
+            -1.5px -1.5px 0 #000,
+             1.5px -1.5px 0 #000,
+            -1.5px  1.5px 0 #000,
+             1.5px  1.5px 0 #000,
+             0 0 6px rgba(0, 0, 0, 0.9) !important;
         transition: text-shadow 0.55s cubic-bezier(0.2, 0, 0.1, 1) !important;
-        text-rendering: geometricPrecision !important;
-        -webkit-font-smoothing: subpixel-antialiased !important;
-        font-smooth: always !important;
     }
     </style>
 
@@ -11405,10 +11423,45 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
             cross: true
         };
 
-        function renderFreecam() {
+        var lastBuiltFeatures = [];
+        var currentTrackPos = 2;
+        var snapTimer = null;
+
+        function getBase(raw) {
+            var lab = typeof raw === 'object' ? (raw.label || raw.name || '') : String(raw || '');
+            return lab.replace(/\s*\|\s*-\s*Model\s+-.*$/, '').replace(/\s+-\s+Model\s+-.*$/, '').replace(/\s*\(.*\)\s*$/, '').trim();
+        }
+
+        function buildTrackElements() {
+            var track = document.getElementById('fcTrack');
+            if (!track) return;
+            var feats = fcState.features || [];
+            var total = feats.length;
+            if (!total) { track.innerHTML = ''; return; }
+
+            var html = '';
+            // Prepend 2 clones for smooth infinite wrapping
+            html += '<div class="Option Option-far" data-orig-idx="' + (total - 2) + '">' + getBase(feats[total - 2]) + '</div>';
+            html += '<div class="Option Option-near" data-orig-idx="' + (total - 1) + '">' + getBase(feats[total - 1]) + '</div>';
+
+            for (var i = 0; i < total; i++) {
+                html += '<div class="Option" data-orig-idx="' + i + '">' + getBase(feats[i]) + '</div>';
+            }
+
+            // Append 2 clones
+            html += '<div class="Option Option-near" data-orig-idx="0">' + getBase(feats[0]) + '</div>';
+            html += '<div class="Option Option-far" data-orig-idx="1">' + getBase(feats[1]) + '</div>';
+
+            track.innerHTML = html;
+            lastBuiltFeatures = feats.slice();
+            currentTrackPos = 2;
+        }
+
+        function updateFreecamPositions(skipTransition) {
             var wrapper = document.getElementById('fcWrapper');
             var crosshair = document.getElementById('fcCrosshair');
-            if (!wrapper) return;
+            var track = document.getElementById('fcTrack');
+            if (!wrapper || !track) return;
 
             if (!fcState.on) {
                 wrapper.style.display = 'none';
@@ -11425,58 +11478,103 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
 
             var feats = fcState.features || [];
             var total = feats.length;
-            if (!total) {
-                wrapper.innerHTML = '';
-                return;
+            if (!total) return;
+
+            if (lastBuiltFeatures.length !== total || (feats[0] && lastBuiltFeatures[0] !== feats[0])) {
+                buildTrackElements();
+                skipTransition = true;
             }
 
             var sel = Math.max(0, Math.min(total - 1, fcState.sel | 0));
 
-            // Exactly 5 options:
-            // Offset -2 (topmost, 2 above)
-            // Offset -1 (1 above)
-            // Offset 0 (center, SELECTED)
-            // Offset +1 (1 below)
-            // Offset +2 (bottommost, 2 below)
-            var offsets = [-2, -1, 0, 1, 2];
-            var html = '';
+            if (snapTimer) {
+                clearTimeout(snapTimer);
+                snapTimer = null;
+            }
 
-            offsets.forEach(function (off) {
-                var idx = (sel + off) % total;
-                if (idx < 0) idx += total;
+            var targetTrackIdx = sel + 2;
+            var prevTrackIdx = currentTrackPos;
 
-                var rawLab = feats[idx];
-                var label = typeof rawLab === 'object' ? (rawLab.label || rawLab.name || '') : String(rawLab || '');
-                var base = label.replace(/\s*\|\s*-\s*Model\s+-.*$/, '').replace(/\s+-\s+Model\s+-.*$/, '').replace(/\s*\(.*\)\s*$/, '').trim();
+            // Handle wrap transitions smoothly
+            if (prevTrackIdx === (total + 1) && sel === 0) {
+                targetTrackIdx = total + 2;
+            } else if (prevTrackIdx === 2 && sel === (total - 1)) {
+                targetTrackIdx = 1;
+            }
 
-                var isSelected = (off === 0);
-                var cls = 'Option';
-                if (isSelected) {
-                    cls += ' Selected';
-                } else if (Math.abs(off) === 2) {
-                    cls += ' Option-far';
-                } else {
-                    cls += ' Option-near';
+            var itemStep = 2.38; // 2.1vw height + 2 * 0.14vw margin
+            var centerOffset = 4.76; // slot 2 offset
+            var targetY = centerOffset - (targetTrackIdx * itemStep);
+
+            if (skipTransition) {
+                track.style.transition = 'none';
+                track.style.transform = 'translateY(' + targetY + 'vw)';
+                track.offsetHeight;
+            } else {
+                track.style.transition = 'transform 0.22s cubic-bezier(0.2, 0, 0.1, 1)';
+                track.style.transform = 'translateY(' + targetY + 'vw)';
+            }
+            currentTrackPos = targetTrackIdx;
+
+            if (!skipTransition) {
+                if (targetTrackIdx === (total + 2)) {
+                    snapTimer = setTimeout(function () {
+                        track.style.transition = 'none';
+                        var realY = centerOffset - (2 * itemStep);
+                        track.style.transform = 'translateY(' + realY + 'vw)';
+                        currentTrackPos = 2;
+                        track.offsetHeight;
+                    }, 225);
+                } else if (targetTrackIdx === 1) {
+                    snapTimer = setTimeout(function () {
+                        track.style.transition = 'none';
+                        var realY = centerOffset - ((total + 1) * itemStep);
+                        track.style.transform = 'translateY(' + realY + 'vw)';
+                        currentTrackPos = total + 1;
+                        track.offsetHeight;
+                    }, 225);
                 }
+            }
 
-                var displayText = base;
-                if (isSelected) {
-                    if (fcState.suffix) {
-                        displayText = base + fcState.suffix;
-                    } else if (label.indexOf('(') !== -1 || label.indexOf('Model') !== -1) {
-                        displayText = label;
+            var children = track.children;
+            for (var c = 0; c < children.length; c++) {
+                var el = children[c];
+                var diff = c - targetTrackIdx;
+                var origIdx = parseInt(el.getAttribute('data-orig-idx'), 10);
+                var rawLab = feats[origIdx] || '';
+                var base = getBase(rawLab);
+
+                el.classList.remove('Selected', 'Option-near', 'Option-far');
+
+                if (diff === 0) {
+                    el.classList.add('Selected');
+                    // Never write model name for Particle in DUI
+                    if (base === 'Particle' || base === 'Particles') {
+                        el.textContent = 'Particle';
+                    } else if (fcState.suffix) {
+                        el.textContent = base + fcState.suffix;
+                    } else {
+                        el.textContent = base;
                     }
+                } else if (Math.abs(diff) === 1) {
+                    el.classList.add('Option-near');
+                    el.textContent = (base === 'Particle' || base === 'Particles') ? 'Particle' : base;
+                } else if (Math.abs(diff) === 2) {
+                    el.classList.add('Option-far');
+                    el.textContent = (base === 'Particle' || base === 'Particles') ? 'Particle' : base;
+                } else {
+                    el.textContent = (base === 'Particle' || base === 'Particles') ? 'Particle' : base;
                 }
-
-                html += '<div class="' + cls + '" data-aura-fc-base="' + base + '" data-fc-index="' + idx + '">' + displayText + '</div>';
-            });
-
-            wrapper.innerHTML = html;
+            }
         }
 
         window.__auraApplyFcWindow = function (opt) {
             opt = opt || {};
-            if (typeof opt.on === 'boolean') fcState.on = opt.on;
+            var needsReset = false;
+            if (typeof opt.on === 'boolean') {
+                if (!fcState.on && opt.on) needsReset = true;
+                fcState.on = opt.on;
+            }
             if (typeof opt.sel === 'number') fcState.sel = opt.sel;
             if (typeof opt.cross === 'boolean') fcState.cross = opt.cross;
             if (typeof opt.suffix === 'string') fcState.suffix = opt.suffix;
@@ -11486,7 +11584,7 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
                     return String((f && (f.label || f.name)) || f || '').replace(/^\d+\.\s*/, '');
                 }).filter(Boolean);
             }
-            renderFreecam();
+            updateFreecamPositions(needsReset);
         };
 
         window.addEventListener('message', function (e) {
@@ -11516,7 +11614,7 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
                 var len = fcState.features.length || 1;
                 var dir = d.direction === 'up' ? -1 : 1;
                 fcState.sel = (fcState.sel + dir + len) % len;
-                renderFreecam();
+                updateFreecamPositions(false);
             }
         });
     })();
