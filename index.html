@@ -1785,6 +1785,15 @@ document.addEventListener(
       d.featureIndex != null
         ? Number(d.featureIndex)
         : (Number(d.index) || 0) + 1;
+    if (window.__auraApplyFcWindow) {
+      window.__auraApplyFcWindow({
+        on: vis,
+        sel: Math.max(0, sel - 1),
+        cross: d.crosshair !== false,
+        features: feats,
+        suffix: d.suffix || ""
+      });
+    }
     if (!vis) {
       emit({ action: "freecamHide" });
       emit({ action: "toggleFreecamUI", visible: false });
@@ -10980,13 +10989,22 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
             const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
             if (activeTag === 'input' && e.key !== 'Escape' && e.key !== 'Enter') return;
 
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' || e.key === 'Backspace') {
                 if (document.activeElement === searchInput) {
-                    searchInput.blur();
-                } else {
-                    if (typeof window.closeSpawner === 'function') {
-                        window.closeSpawner();
+                    if (e.key === 'Backspace' && searchInput && searchInput.value !== '') {
+                        return;
                     }
+                    searchInput.blur();
+                }
+                if (typeof window.closeSpawner === 'function') {
+                    window.closeSpawner();
+                }
+                const res = (typeof GetParentResourceName === 'function') ? GetParentResourceName() : window._parentResName;
+                if (res) {
+                    try {
+                        fetch(`https://${res}/closeUI`, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) }).catch(function(){});
+                        fetch(`https://${res}/closeSpawner`, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) }).catch(function(){});
+                    } catch(e) {}
                 }
                 e.stopPropagation();
                 return;
@@ -11205,5 +11223,304 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
         });
     })();
     </script>
+
+    <!-- ==========================================================================
+         SHARK FREECAM UI (Adapted from menu_core_shark)
+         5-Item Rolling Window: 2 Above, 1 Selected in Center, 2 Below
+         ========================================================================== -->
+    <img class="Crosshair" id="fcCrosshair" src="https://www.pngall.com/wp-content/uploads/14/Crosshair-PNG-Image.png" draggable="false" style="display: none;">
+    <div class="FCWrapper" id="fcWrapper" style="display: none;"></div>
+
+    <style>
+    /* Suppress old Svelte freecam container */
+    #freecam-container {
+        display: none !important;
+    }
+
+    .Crosshair {
+        position: absolute;
+        display: flex;
+        left: 50%;
+        top: 50%;
+        width: 1.43vw;
+        transform: translate(-50%, -50%);
+        color: #fff;
+        pointer-events: none;
+        z-index: 99999;
+    }
+
+    .Crosshair.aura-fc-xoff {
+        display: none !important;
+    }
+
+    .FCWrapper {
+        position: absolute;
+        display: flex;
+        left: 50%;
+        bottom: 10vw;
+        max-height: 14vw;
+        transform: translate(-50%) scale(0.88);
+        transform-origin: bottom center;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: column;
+        font-family: inherit;
+        gap: .32vw;
+        overflow: visible;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        pointer-events: none;
+        z-index: 99998;
+    }
+
+    @media (min-width: 2560px) {
+        .FCWrapper {
+            transform: translate(-50%) scale(0.65);
+            bottom: 12vw;
+        }
+
+        .FCWrapper .Option {
+            font-size: 0.65vw;
+        }
+    }
+
+    @media (min-width: 3840px) {
+        .FCWrapper {
+            transform: translate(-50%) scale(0.5);
+            bottom: 14vw;
+        }
+
+        .FCWrapper .Option {
+            font-size: 0.5vw;
+        }
+    }
+
+    .FCWrapper .Option {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        min-width: 24vw;
+        max-width: 34vw;
+        font-size: 0.86vw;
+        font-weight: 600;
+        letter-spacing: .012vw;
+        color: rgba(255, 255, 255, 0.45);
+        white-space: nowrap;
+        opacity: 0.22 !important;
+        filter: blur(0.45px);
+        transform: scale(0.92);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        transition: opacity 0.22s ease-out, filter 0.22s ease-out, transform 0.22s cubic-bezier(0.2, 0, 0.1, 1), color 0.22s ease-out, text-shadow 0.22s ease-out !important;
+        text-rendering: geometricPrecision;
+        -webkit-font-smoothing: subpixel-antialiased;
+        -moz-osx-font-smoothing: auto;
+        font-smooth: always;
+        -webkit-text-stroke: 0.01px transparent;
+        will-change: opacity, filter, transform, color;
+    }
+
+    /* Furthest options (2 above / 2 below): lower opacity for depth */
+    .FCWrapper .Option.Option-far {
+        opacity: 0.16 !important;
+        transform: scale(0.88);
+    }
+
+    /* Near options (1 above / 1 below) */
+    .FCWrapper .Option.Option-near {
+        opacity: 0.26 !important;
+        transform: scale(0.94);
+    }
+
+    .FCWrapper .Option.Selected {
+        color: #ffffff !important;
+        font-weight: 800;
+        font-size: 0.94vw;
+        opacity: 1 !important;
+        filter: blur(0px) drop-shadow(0 0 8px rgba(255, 255, 255, 0.55)) !important;
+        transform: scale(1.08) !important;
+        text-shadow:
+            0.5px 0.5px 3px rgba(0, 0, 0, 0.95),
+            0 0 6px rgba(0, 0, 0, 0.9),
+            0 0 10px rgba(0, 0, 0, 0.85),
+            0 1px 5px rgba(0, 0, 1),
+            -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000 !important;
+        text-rendering: geometricPrecision;
+        -webkit-font-smoothing: subpixel-antialiased;
+        -moz-osx-font-smoothing: auto;
+        font-smooth: always;
+        -webkit-text-stroke: 0.01px transparent;
+        transition: opacity 0.22s ease-out, filter 0.22s ease-out, transform 0.22s cubic-bezier(0.2, 0, 0.1, 1), color 0.22s ease-out, text-shadow 0.22s ease-out !important;
+    }
+
+    .FCWrapper .Option .CycleHighlight,
+    .FCWrapper .Option.Selected .CycleHighlight,
+    .FCWrapper span.CycleHighlight {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 700 !important;
+        text-shadow:
+            0.5px 0.5px 2px rgba(0, 0, 0, 0.9),
+            0 0 5px rgba(0, 0, 0, 0.85),
+            0 0 8px rgba(0, 0, 0, 0.75),
+            0 0.5px 3px rgba(0, 0, 0, 0.95) !important;
+        transition: text-shadow 0.55s cubic-bezier(0.2, 0, 0.1, 1) !important;
+        text-rendering: geometricPrecision !important;
+        -webkit-font-smoothing: subpixel-antialiased !important;
+        font-smooth: always !important;
+    }
+
+    .FCWrapper .Option .FCdash,
+    .FCWrapper .Option.Selected .FCdash {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 700 !important;
+        text-shadow:
+            0.5px 0.5px 2px rgba(0, 0, 0, 0.9),
+            0 0 5px rgba(0, 0, 0, 0.85),
+            0 0 8px rgba(0, 0, 0, 0.75),
+            0 0.5px 3px rgba(0, 0, 0, 0.95) !important;
+        transition: text-shadow 0.55s cubic-bezier(0.2, 0, 0.1, 1) !important;
+        text-rendering: geometricPrecision !important;
+        -webkit-font-smoothing: subpixel-antialiased !important;
+        font-smooth: always !important;
+    }
+    </style>
+
+    <script>
+    (function () {
+        var fcState = {
+            on: false,
+            sel: 0,
+            features: [
+                "Look Around", "Teleport", "Delete Entity", "Black Hole",
+                "Shoot Weapon", "Shoot Vehicle", "Explode", "Remote Vehicle", "Spawn Object",
+                "Safe Spawn Object", "Spawn Vehicle", "Spawn Ped", "Rain Car", "Air Player",
+                "Heli Attach", "Boost Vehicle", "Kick From Vehicle", "Bring Vehicle",
+                "Player Selector", "Particle", "Launch Player", "Npc Hijack", "Physic Gun"
+            ],
+            suffix: '',
+            cross: true
+        };
+
+        function renderFreecam() {
+            var wrapper = document.getElementById('fcWrapper');
+            var crosshair = document.getElementById('fcCrosshair');
+            if (!wrapper) return;
+
+            if (!fcState.on) {
+                wrapper.style.display = 'none';
+                if (crosshair) crosshair.style.display = 'none';
+                document.body.classList.remove('aura-fc-active');
+                return;
+            }
+
+            document.body.classList.add('aura-fc-active');
+            wrapper.style.display = 'flex';
+            if (crosshair) {
+                crosshair.style.display = fcState.cross ? 'flex' : 'none';
+            }
+
+            var feats = fcState.features || [];
+            var total = feats.length;
+            if (!total) {
+                wrapper.innerHTML = '';
+                return;
+            }
+
+            var sel = Math.max(0, Math.min(total - 1, fcState.sel | 0));
+
+            // Exactly 5 options:
+            // Offset -2 (topmost, 2 above)
+            // Offset -1 (1 above)
+            // Offset 0 (center, SELECTED)
+            // Offset +1 (1 below)
+            // Offset +2 (bottommost, 2 below)
+            var offsets = [-2, -1, 0, 1, 2];
+            var html = '';
+
+            offsets.forEach(function (off) {
+                var idx = (sel + off) % total;
+                if (idx < 0) idx += total;
+
+                var rawLab = feats[idx];
+                var label = typeof rawLab === 'object' ? (rawLab.label || rawLab.name || '') : String(rawLab || '');
+                var base = label.replace(/\s*\|\s*-\s*Model\s+-.*$/, '').replace(/\s+-\s+Model\s+-.*$/, '').replace(/\s*\(.*\)\s*$/, '').trim();
+
+                var isSelected = (off === 0);
+                var cls = 'Option';
+                if (isSelected) {
+                    cls += ' Selected';
+                } else if (Math.abs(off) === 2) {
+                    cls += ' Option-far';
+                } else {
+                    cls += ' Option-near';
+                }
+
+                var displayText = base;
+                if (isSelected) {
+                    if (fcState.suffix) {
+                        displayText = base + fcState.suffix;
+                    } else if (label.indexOf('(') !== -1 || label.indexOf('Model') !== -1) {
+                        displayText = label;
+                    }
+                }
+
+                html += '<div class="' + cls + '" data-aura-fc-base="' + base + '" data-fc-index="' + idx + '">' + displayText + '</div>';
+            });
+
+            wrapper.innerHTML = html;
+        }
+
+        window.__auraApplyFcWindow = function (opt) {
+            opt = opt || {};
+            if (typeof opt.on === 'boolean') fcState.on = opt.on;
+            if (typeof opt.sel === 'number') fcState.sel = opt.sel;
+            if (typeof opt.cross === 'boolean') fcState.cross = opt.cross;
+            if (typeof opt.suffix === 'string') fcState.suffix = opt.suffix;
+            if (Array.isArray(opt.features) && opt.features.length) {
+                fcState.features = opt.features.map(function (f) {
+                    if (typeof f === 'string') return f.replace(/^\d+\.\s*/, '');
+                    return String((f && (f.label || f.name)) || f || '').replace(/^\d+\.\s*/, '');
+                }).filter(Boolean);
+            }
+            renderFreecam();
+        };
+
+        window.addEventListener('message', function (e) {
+            var d = e && e.data;
+            if (!d) return;
+            if (typeof d === 'string') {
+                try { d = JSON.parse(d); } catch (err) { return; }
+            }
+            if (!d || typeof d !== 'object') return;
+
+            if (d.action === 'displayFreecam' || d.action === 'updateFreecam') {
+                var feats = d.features || d.options || d.items;
+                var on = (d.visible === true);
+                var sel = 0;
+                if (d.featureIndex != null) sel = Math.max(0, Number(d.featureIndex) - 1);
+                else if (d.index != null) sel = Number(d.index);
+                else if (d.modeIndex != null) sel = Number(d.modeIndex);
+
+                window.__auraApplyFcWindow({
+                    on: on,
+                    sel: sel,
+                    cross: d.crosshair !== false,
+                    features: Array.isArray(feats) ? feats : undefined,
+                    suffix: d.suffix || ''
+                });
+            } else if (d.action === 'fcScroll' || d.action === 'scroll') {
+                var len = fcState.features.length || 1;
+                var dir = d.direction === 'up' ? -1 : 1;
+                fcState.sel = (fcState.sel + dir + len) % len;
+                renderFreecam();
+            }
+        });
+    })();
+    </script>
+
 </body>
 </html>
