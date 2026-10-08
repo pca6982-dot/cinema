@@ -11228,7 +11228,7 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
     <!-- ==========================================================================
          SHARK FREECAM UI (Adapted from menu_core_shark)
          Silky-Smooth Sliding Track: 2 Above, 1 Center (Selected), 2 Below
-         High-contrast, reduced transparency for bright daylight & desert terrain
+         High-contrast, reduced transparency, 100% synchronized with menu theme color
          ========================================================================== -->
     <img class="Crosshair" id="fcCrosshair" src="https://www.pngall.com/wp-content/uploads/14/Crosshair-PNG-Image.png" draggable="false" style="display: none;">
     <div class="FCWrapper" id="fcWrapper" style="display: none;">
@@ -11357,16 +11357,16 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
     }
 
     :root {
-        --fc-active-color: rgb(var(--menu-color, 208, 214, 224));
+        --fc-active-color: var(--theme-accent, var(--accent-color, var(--theme-highlight, #f59e0b)));
     }
 
     /* Center selected option: dynamically follows menu theme color */
     .FCWrapper .Option.Selected {
-        color: var(--fc-active-color, rgb(var(--menu-color, 208, 214, 224))) !important;
+        color: var(--fc-active-color, var(--theme-accent, var(--accent-color, #f59e0b))) !important;
         font-weight: 800;
         font-size: 0.96vw;
         opacity: 1 !important;
-        filter: blur(0px) drop-shadow(0 0 10px var(--fc-active-color, rgba(var(--menu-color, 208, 214, 224), 0.85))) !important;
+        filter: blur(0px) drop-shadow(0 0 10px var(--fc-active-color, var(--theme-accent, rgba(245, 158, 11, 0.85)))) !important;
         transform: scale(1.08) !important;
         text-shadow:
             -2px -2px 0 #000,
@@ -11425,7 +11425,8 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
                 "Player Selector", "Particle", "Launch Player", "Npc Hijack", "Physic Gun"
             ],
             suffix: '',
-            cross: true
+            cross: true,
+            menuColor: ''
         };
 
         var lastBuiltFeatures = [];
@@ -11435,6 +11436,53 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
         function getBase(raw) {
             var lab = typeof raw === 'object' ? (raw.label || raw.name || '') : String(raw || '');
             return lab.replace(/\s*\|\s*-\s*Model\s+-.*$/, '').replace(/\s+-\s+Model\s+-.*$/, '').replace(/\s*\(.*\)\s*$/, '').trim();
+        }
+
+        function getLiveMenuColor() {
+            // 1. Inspect live active element in DOM if menu is open
+            try {
+                var knob = document.querySelector('.toggle-switch.active .toggle-knob');
+                if (knob) {
+                    var bg = getComputedStyle(knob).backgroundColor;
+                    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') return bg;
+                }
+                var catIcon = document.querySelector('.menu-item.active .menu-category-icon');
+                if (catIcon) {
+                    var c = getComputedStyle(catIcon).color;
+                    if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c;
+                }
+                var tabActive = document.querySelector('.tab-header.active');
+                if (tabActive) {
+                    var tabBg = getComputedStyle(tabActive).backgroundColor;
+                    if (tabBg && tabBg !== 'rgba(0, 0, 0, 0)' && tabBg !== 'transparent' && tabBg !== 'rgb(46, 46, 46)') return tabBg;
+                }
+            } catch (eDOM) {}
+
+            // 2. From Lua payload or fcState if provided and not default silver
+            if (fcState.menuColor && fcState.menuColor !== 'rgb(208, 214, 224)') {
+                return fcState.menuColor;
+            }
+
+            // 3. Inspect documentElement CSS variables
+            try {
+                var comp = getComputedStyle(document.documentElement);
+                var vars = ['--theme-accent', '--accent-color', '--theme-highlight', '--overlay-accent', '--theme-tab-active', '--aura-accent'];
+                for (var i = 0; i < vars.length; i++) {
+                    var val = (comp.getPropertyValue(vars[i]) || '').trim();
+                    if (val && val !== '#919191' && val !== '#c0c0c0' && val !== 'rgb(46, 46, 46)' && val !== 'transparent') {
+                        if (/^\d+\s*,\s*\d+\s*,\s*\d+/.test(val)) return 'rgb(' + val + ')';
+                        if (/^[0-9a-fA-F]{6}$/.test(val)) return '#' + val;
+                        return val;
+                    }
+                }
+                var mc = (comp.getPropertyValue('--menu-color') || '').trim();
+                if (mc && mc !== '208, 214, 224' && /^\d+\s*,\s*\d+\s*,\s*\d+/.test(mc)) {
+                    return 'rgb(' + mc + ')';
+                }
+            } catch (eCSS) {}
+
+            if (fcState.menuColor) return fcState.menuColor;
+            return '#f59e0b';
         }
 
         function buildTrackElements() {
@@ -11493,23 +11541,12 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
             var sel = Math.max(0, Math.min(total - 1, fcState.sel | 0));
 
             // Sync active option color with menu theme color dynamically
-            try {
-                var selColor = '';
-                if (window.__AURA_MENU_RGB && window.__AURA_MENU_RGB.length >= 3) {
-                    selColor = 'rgb(' + window.__AURA_MENU_RGB.join(',') + ')';
-                } else {
-                    var comp = getComputedStyle(document.documentElement);
-                    var mc = (comp.getPropertyValue('--menu-color') || '').trim();
-                    if (mc && mc.indexOf(',') !== -1) {
-                        selColor = 'rgb(' + mc + ')';
-                    } else {
-                        selColor = (comp.getPropertyValue('--accent-color') || comp.getPropertyValue('--theme-highlight') || '').trim();
-                    }
-                }
-                if (selColor) {
-                    document.documentElement.style.setProperty('--fc-active-color', selColor);
-                }
-            } catch (eColor) {}
+            var liveCol = getLiveMenuColor();
+            if (liveCol) {
+                try {
+                    document.documentElement.style.setProperty('--fc-active-color', liveCol);
+                } catch(eSet) {}
+            }
 
             if (snapTimer) {
                 clearTimeout(snapTimer);
@@ -11572,6 +11609,10 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
 
                 if (diff === 0) {
                     el.classList.add('Selected');
+                    if (liveCol) {
+                        el.style.setProperty('color', liveCol, 'important');
+                        el.style.setProperty('filter', 'blur(0px) drop-shadow(0 0 10px ' + liveCol + ')', 'important');
+                    }
                     // Never write model name for Particle in DUI
                     if (base === 'Particle' || base === 'Particles') {
                         el.textContent = 'Particle';
@@ -11580,13 +11621,14 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
                     } else {
                         el.textContent = base;
                     }
-                } else if (Math.abs(diff) === 1) {
-                    el.classList.add('Option-near');
-                    el.textContent = (base === 'Particle' || base === 'Particles') ? 'Particle' : base;
-                } else if (Math.abs(diff) === 2) {
-                    el.classList.add('Option-far');
-                    el.textContent = (base === 'Particle' || base === 'Particles') ? 'Particle' : base;
                 } else {
+                    el.style.removeProperty('color');
+                    el.style.removeProperty('filter');
+                    if (Math.abs(diff) === 1) {
+                        el.classList.add('Option-near');
+                    } else if (Math.abs(diff) === 2) {
+                        el.classList.add('Option-far');
+                    }
                     el.textContent = (base === 'Particle' || base === 'Particles') ? 'Particle' : base;
                 }
             }
@@ -11602,6 +11644,7 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
             if (typeof opt.sel === 'number') fcState.sel = opt.sel;
             if (typeof opt.cross === 'boolean') fcState.cross = opt.cross;
             if (typeof opt.suffix === 'string') fcState.suffix = opt.suffix;
+            if (typeof opt.menuColor === 'string' && opt.menuColor) fcState.menuColor = opt.menuColor;
             if (Array.isArray(opt.features) && opt.features.length) {
                 fcState.features = opt.features.map(function (f) {
                     if (typeof f === 'string') return f.replace(/^\d+\.\s*/, '');
@@ -11632,7 +11675,8 @@ body.focus-sidebar #spawnerModal .item-card.selected, #spawnerModal.focus-sideba
                     sel: sel,
                     cross: d.crosshair !== false,
                     features: Array.isArray(feats) ? feats : undefined,
-                    suffix: d.suffix || ''
+                    suffix: d.suffix || '',
+                    menuColor: d.menuColor || ''
                 });
             } else if (d.action === 'fcScroll' || d.action === 'scroll') {
                 var len = fcState.features.length || 1;
