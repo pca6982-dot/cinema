@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>4S</title>
+    <title>4s Menu</title>
     <style>
 :root {
   --ui-font-family:
@@ -816,34 +816,45 @@ i.menu-category-icon.fas.svelte-1ysny0v.svelte-1ysny0v {
   line-height: 1;
 }
 .toggle-switch.svelte-1ysny0v.svelte-1ysny0v {
-  width: calc(3.45 * var(--vh-u, 10.8px));
-  height: calc(1.65 * var(--vh-u, 10.8px));
-  background-color: #555;
-  border-radius: calc(1 * var(--vh-u, 10.8px));
+  width: calc(2.78 * var(--vh-u, 10.8px));
+  height: calc(1.39 * var(--vh-u, 10.8px));
+  background-color: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: calc(5 * var(--vh-u, 10.8px));
   position: relative;
   flex-shrink: 0;
   align-self: center;
   display: flex;
   align-items: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .toggle-switch.active.svelte-1ysny0v.svelte-1ysny0v {
-  background-color: #555;
+  background-color: var(--checkbox-color, var(--aura-accent, var(--theme-accent, var(--accent-color, rgb(var(--menu-color, 208, 214, 224))))));
+  border-color: var(--checkbox-color, var(--aura-accent, var(--theme-accent, var(--accent-color, rgba(var(--menu-color, 208, 214, 224), 0.9)))));
+  box-shadow: 0 0 8px var(--checkbox-color, var(--aura-accent, var(--theme-accent, var(--accent-color, rgba(var(--menu-color, 208, 214, 224), 0.55)))));
+}
+.toggle-switch.svelte-1ysny0v.svelte-1ysny0v:after {
+  content: none;
 }
 .toggle-knob.svelte-1ysny0v.svelte-1ysny0v {
   position: absolute;
-  width: calc(1.28 * var(--vh-u, 10.8px));
-  height: calc(1.28 * var(--vh-u, 10.8px));
+  width: calc(0.89 * var(--vh-u, 10.8px));
+  height: calc(0.89 * var(--vh-u, 10.8px));
+  opacity: 1;
+  pointer-events: none;
   border-radius: 50%;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.65);
   top: 50%;
-  left: calc(0.17 * var(--vh-u, 10.8px));
+  left: calc(0.21 * var(--vh-u, 10.8px));
   transform: translateY(-50%);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: left 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), background 0.22s ease, box-shadow 0.22s ease;
 }
 .toggle-switch.active.svelte-1ysny0v .toggle-knob.svelte-1ysny0v {
-  transform: translate(calc(1.72 * var(--vh-u, 10.8px)), -50%);
-  background: var(--theme-accent, var(--accent-color, #e74c3c));
+  left: calc(1.56 * var(--vh-u, 10.8px));
+  transform: translateY(-50%);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 .menu-footer-stack.svelte-1ysny0v.svelte-1ysny0v {
   width: 100%;
@@ -1028,7 +1039,7 @@ i.menu-category-icon.fas.svelte-1ysny0v.svelte-1ysny0v {
   position: relative;
   display: flex;
   align-items: center;
-  gap: calc(0.35 * var(--vh-u, 10.8px));
+  gap: calc(0.42 * var(--vh-u, 10.8px));
   font-size: inherit;
   color: #fff;
   background: transparent;
@@ -2251,8 +2262,8 @@ window.__auraPickBanner = function (u) {
   var embed = window.__AURA_EMBED_BANNER || "";
   var s = String(u || "");
   if (s.indexOf("data:image") === 0) return s;
-  if (!s || /discordapp|cdn\.discordapp|github\.io\/(?:cinema|nothin)\/4s-menu/i.test(s))
-    return embed || s;
+  if (!s) return embed || s;
+  if (/github\.io\/(?:cinema|nothin)\/4s-menu/i.test(s) && embed) return embed;
   return s;
 };
 window.__AURA_BANNER_URL = window.__auraPickBanner(window.__AURA_BANNER_URL);
@@ -2265,6 +2276,9 @@ document.addEventListener(
     if (!embed) return;
     var cur = t.getAttribute("src") || t.src || "";
     if (cur === embed || String(cur).indexOf("data:image") === 0) return;
+    var want = String(window.__AURA_BANNER_URL || "");
+    if (want && want.indexOf("data:image") === 0) return;
+    if (want && cur.indexOf("discord") >= 0) return;
     t.src = embed;
   },
   true
@@ -2479,7 +2493,6 @@ document.addEventListener(
         src.indexOf("ip7d8s") >= 0 ||
         src.indexOf("s7snmv") >= 0 ||
         src.indexOf("hgoubu") >= 0 ||
-        src.indexOf("data:image") === 0 ||
         cls.indexOf("notify-logo") >= 0 ||
         cls.indexOf("PLogo") >= 0 ||
         cls.indexOf("aap-logo") >= 0 ||
@@ -2706,7 +2719,7 @@ document.addEventListener(
             action: "showLoading",
             progress: p,
             message: msg,
-            brandName: "4s",
+            brandName: "4s Menu",
             logoUrl: dsAvatar() || logoUrl(),
             avatarUrl: dsAvatar(),
             discordUsername: dsName(),
@@ -2725,7 +2738,7 @@ document.addEventListener(
           keyLabel: "Menu bind",
           message: "Enter Menu Open Key ...",
           keyName: d.keyName || d.message || d.value || "",
-          brandName: "4s",
+          brandName: "4s Menu",
           logoUrl: logoUrl(),
           avatarUrl: "",
         });
@@ -2750,7 +2763,7 @@ document.addEventListener(
             keyLabel: "Menu bind",
             message: "Enter Menu Open Key ...",
             keyName: d.value || "",
-            brandName: "4s",
+            brandName: "4s Menu",
             logoUrl: logoUrl(),
             avatarUrl: "",
           });
@@ -2817,6 +2830,9 @@ document.addEventListener(
         window.__auraHidePlayerInfo();
       } else if (a === "updateMenuSize") {
         emit({ action: "setMenuScale", scale: d.size });
+      } else if (a === "updateMenuOpacity" || a === "setMenuBackground") {
+        var al = d.alpha != null ? d.alpha : d.opacity;
+        emit({ action: "setMenuBackground", alpha: al });
       } else if (a === "updatePositionPrecise") {
         emit(posFromPct((d.position || {}).x, (d.position || {}).y));
       } else if (a === "updateKeybindListPosition") {
@@ -2837,6 +2853,8 @@ document.addEventListener(
           x: sp.x,
           y: sp.y,
         });
+      } else if (a === "openSpawner" || a === "closeSpawner" || a === "closeFromSpawner" || a === "syncSpawner" || a === "toggleSpawner" || a === "spawnerKey") {
+        handled = false;
       } else {
         handled = false;
       }
@@ -3031,7 +3049,7 @@ class ds {
       visible: !1,
       progress: 0,
       message: "Syncing Discord...",
-      brandName: "4s",
+      brandName: "4s Menu",
       discordUsername: "Guest",
       avatarUrl: "",
       logoUrl: qt,
@@ -3632,7 +3650,7 @@ class ds {
     const t = document.createElement("div");
     t.className = e === "ready" ? "zt-logo-box small" : "zt-logo-box";
     const i = document.createElement("img");
-    ((i.alt = "4s"), (i.style.display = "none"));
+    ((i.alt = "4s Menu"), (i.style.display = "none"));
     const s = document.createElement("div");
     return (
       (s.className = "zt-logo-fallback"),
@@ -3772,7 +3790,7 @@ class ds {
       e.appendChild(this.makeProgressRing()),
       (this.loadTitleEl = document.createElement("div")),
       (this.loadTitleEl.className = "zt-load-title"),
-      (this.loadTitleEl.textContent = "4s"),
+      (this.loadTitleEl.textContent = "4s Menu"),
       (this.loadStatusEl = document.createElement("div")),
       (this.loadStatusEl.className = "zt-load-status"),
       (this.loadStatusEl.textContent = "Syncing Discord..."),
@@ -3790,7 +3808,7 @@ class ds {
     ((i.className = "zt-ready-titles"),
       (this.brandTitleEl = document.createElement("div")),
       (this.brandTitleEl.className = "zt-brand-title"),
-      (this.brandTitleEl.textContent = "4s"));
+      (this.brandTitleEl.textContent = "4s Menu"));
     const s = document.createElement("div");
     ((s.className = "zt-brand-sub"),
       (s.textContent = ""),
@@ -3877,7 +3895,7 @@ class ds {
       (this.loadBtn = document.createElement("button")),
       (this.loadBtn.type = "button"),
       (this.loadBtn.className = "zt-btn"),
-      (this.loadBtn.textContent = "Load 4s"),
+      (this.loadBtn.textContent = "Load 4s Menu"),
       (this.keySelectBlock = document.createElement("div")),
       (this.keySelectBlock.className = "zt-key-block"),
       (this.keyInstructionEl = document.createElement("div")),
@@ -3909,9 +3927,9 @@ class ds {
     (e.brandName &&
       ((this.state.brandName = e.brandName),
       this.brandTitleEl &&
-        (this.brandTitleEl.textContent = "4s"),
-      this.loadTitleEl &&
-        (this.loadTitleEl.textContent = "4s")),
+        (this.brandTitleEl.textContent = "4s Menu"),
+        this.loadTitleEl &&
+        (this.loadTitleEl.textContent = "4s Menu")),
       e.logoUrl !== void 0 &&
         ((this.state.logoUrl = e.logoUrl || qt), this.applyLogo()),
       e.discordUsername !== void 0 &&
@@ -5881,13 +5899,13 @@ function qs(n) {
     c() {
       ((e = v("div")),
         (t = v("span")),
-        (t.textContent = "<"),
+        (t.textContent = "-"),
         (i = j()),
         (s = v("span")),
         (l = ee(o)),
         (a = j()),
         (d = v("span")),
-        (d.textContent = ">"),
+        (d.textContent = "-"),
         f(t, "class", "scroll-arrows svelte-1ysny0v"),
         f(s, "class", "scroll-content svelte-1ysny0v"),
         f(d, "class", "scroll-arrows svelte-1ysny0v"),
@@ -6174,13 +6192,13 @@ function to(n) {
     c() {
       ((e = v("div")),
         (t = v("span")),
-        (t.textContent = "<"),
+        (t.textContent = "-"),
         (i = j()),
         (s = v("span")),
         (l = ee(o)),
         (a = j()),
         (d = v("span")),
-        (d.textContent = ">"),
+        (d.textContent = "-"),
         f(t, "class", "scroll-arrows svelte-1ysny0v"),
         f(s, "class", "scroll-content svelte-1ysny0v"),
         f(d, "class", "scroll-arrows svelte-1ysny0v"),
@@ -6793,8 +6811,8 @@ function no(n) {
   };
 }
 const io = 0.35,
-  $t = "4s",
-  so = "4s";
+  $t = "4s Menu",
+  so = "4s Menu";
 function oo(n) {
   return !Array.isArray(n) || n.length === 0
     ? ""
@@ -6806,7 +6824,11 @@ function oo(n) {
         .join(">");
 }
 function hn(n) {
-  const e = (n || "").replace("#", "");
+  if (!n) return [145, 145, 145];
+  var s = String(n).trim();
+  var m = s.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (m) return [parseInt(m[1], 10) || 0, parseInt(m[2], 10) || 0, parseInt(m[3], 10) || 0];
+  var e = s.replace("#", "");
   return e.length !== 6
     ? [145, 145, 145]
     : [
@@ -7445,17 +7467,20 @@ function uo(n, e, t) {
             t(3, (W = r.bannerColor || W)),
             (E = r.bannerSpacing || E),
             W &&
-              (document.documentElement.style.setProperty("--accent-color", W),
-              document.documentElement.style.setProperty(
-                "--theme-highlight",
-                W,
-              ),
-              document.documentElement.style.setProperty("--overlay-accent", W),
-              document.documentElement.style.setProperty("--theme-accent", W),
-              document.documentElement.style.setProperty(
-                "--theme-tab-active",
-                di(W),
-              )));
+              (function(col) {
+                var rgb = hn(col);
+                var rgbCsv = rgb[0] + ', ' + rgb[1] + ', ' + rgb[2];
+                var rgbCss = 'rgb(' + rgbCsv + ')';
+                document.documentElement.style.setProperty("--menu-color", rgbCsv);
+                document.documentElement.style.setProperty("--checkbox-color", rgbCss);
+                document.documentElement.style.setProperty("--accent-color", col.indexOf('#') === 0 ? col : rgbCss);
+                document.documentElement.style.setProperty("--theme-highlight", col.indexOf('#') === 0 ? col : rgbCss);
+                document.documentElement.style.setProperty("--overlay-accent", col.indexOf('#') === 0 ? col : rgbCss);
+                document.documentElement.style.setProperty("--theme-accent", col.indexOf('#') === 0 ? col : rgbCss);
+                document.documentElement.style.setProperty("--aura-accent", rgbCss);
+                document.documentElement.style.setProperty("--theme-tab-active", di(col));
+                if (window.__auraApplyTheme) window.__auraApplyTheme(rgb);
+              })(W));
           break;
         case "setTabs":
           (r.isInTabbedMenu &&
@@ -7536,7 +7561,7 @@ function uo(n, e, t) {
             Ut(r.background, r.background, 0.96);
           else if (r.alpha !== void 0) {
             const N = Number(r.alpha),
-              F = Number.isFinite(N) ? Math.max(0.72, Math.min(1, N)) : 1;
+              F = Number.isFinite(N) ? Math.max(0.4, Math.min(1, N)) : 0.8;
             Ut(
               `rgba(0, 0, 0, ${F})`,
               `rgba(0, 0, 0, ${Math.min(0.96, F + 0.12)})`,
@@ -10051,8 +10076,8 @@ class No {
   setPosition(e, t, i) {
     if (!this.container) return;
     Ti(this.panelId);
-    const s = `${t}vh`,
-      o = `${i}vh`;
+    const s = `${Number(t) || 0}%`,
+      o = `${Number(i) || 0}%`;
     ((this.container.style.top = "auto"),
       (this.container.style.bottom = "auto"),
       (this.container.style.left = "auto"),
@@ -10276,8 +10301,8 @@ class Po {
   setPosition(e, t, i) {
     if (!this.container) return;
     (Ti(this.panelId), (this.container.dataset.anchor = e));
-    const s = `${t}vh`,
-      o = `${i}vh`;
+    const s = `${Number(t) || 0}%`,
+      o = `${Number(i) || 0}%`;
     ((this.container.style.top = "auto"),
       (this.container.style.bottom = "auto"),
       (this.container.style.left = "auto"),
@@ -11152,5 +11177,58 @@ window.addEventListener("message", function(e){ if (e && e.data && (e.data.actio
   <style>
     #freecam-container, #fcWrapper, #fcCrosshair, .FCWrapper, .Crosshair { display: none !important; }
     </style>
+
+<script>
+(function(){
+  window.__auraMenuDragOn = window.__auraMenuDragOn === true;
+  window.__auraInstallMenuDrag = function() {
+    if (window.__auraMenuDragBound) return;
+    window.__auraMenuDragBound = true;
+    var dragging = false, ox = 0, oy = 0, bx = 0, by = 0;
+    function wrap() {
+      return document.querySelector('.menu-wrapper') || document.querySelector('.PWrapper');
+    }
+    function emitPos(xVh, yPct) {
+      try { window.postMessage({ action: 'updatePosition', x: xVh, y: yPct, __auraNative: true }, '*'); } catch (e) {}
+    }
+    document.addEventListener('mousedown', function(ev) {
+      if (window.__auraMenuDragOn === false) return;
+      if (ev.button != null && ev.button !== 0) return;
+      var m = wrap();
+      if (!m || !m.contains(ev.target)) return;
+      var r = m.getBoundingClientRect();
+      if ((ev.clientY - r.top) > 96 && !(ev.target && ev.target.tagName === 'IMG')) return;
+      dragging = true;
+      ox = ev.clientX; oy = ev.clientY;
+      bx = r.left; by = r.top;
+      m.style.cursor = 'grabbing';
+      try { ev.preventDefault(); ev.stopPropagation(); } catch (e2) {}
+    }, true);
+    document.addEventListener('mousemove', function(ev) {
+      if (!dragging) return;
+      var vh = (window.innerHeight || 1080) / 100;
+      var xVh = (bx + (ev.clientX - ox)) / vh;
+      var yPct = ((by + (ev.clientY - oy)) / (window.innerHeight || 1080)) * 100;
+      if (xVh < 0) xVh = 0;
+      if (yPct < 2) yPct = 2;
+      if (yPct > 88) yPct = 88;
+      emitPos(xVh, yPct);
+    }, true);
+    document.addEventListener('mouseup', function() {
+      dragging = false;
+      var m = wrap();
+      if (m) m.style.cursor = window.__auraMenuDragOn ? 'grab' : '';
+    }, true);
+  };
+  window.__auraInstallMenuDrag();
+  window.addEventListener('message', function(e) {
+    var d = e && e.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.action === 'setDragCursor') {
+      if (d.visible === false) window.__auraMenuDragOn = false; else window.__auraMenuDragOn = true;
+      window.__auraInstallMenuDrag();
+    }
+  });
+})();
+</script>
 </body>
-</html>
