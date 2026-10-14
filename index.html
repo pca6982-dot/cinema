@@ -816,15 +816,15 @@ i.menu-category-icon.fas.svelte-1ysny0v.svelte-1ysny0v {
   line-height: 1;
 }
 .toggle-switch.svelte-1ysny0v.svelte-1ysny0v {
-  width: 1.5625vw;
-  height: .7813vw;
-  min-width: 1.5625vw;
-  min-height: .7813vw;
-  max-width: 1.5625vw;
-  max-height: .7813vw;
+  width: calc(2.05 * var(--vh-u, 10.8px));
+  height: calc(1.05 * var(--vh-u, 10.8px));
+  min-width: calc(2.05 * var(--vh-u, 10.8px));
+  min-height: calc(1.05 * var(--vh-u, 10.8px));
+  max-width: calc(2.05 * var(--vh-u, 10.8px));
+  max-height: calc(1.05 * var(--vh-u, 10.8px));
   background-color: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 5vw;
+  border-radius: calc(5 * var(--vh-u, 10.8px));
   position: relative;
   flex-shrink: 0;
   align-self: center;
@@ -845,15 +845,15 @@ i.menu-category-icon.fas.svelte-1ysny0v.svelte-1ysny0v {
 .toggle-knob.svelte-1ysny0v.svelte-1ysny0v {
   position: absolute;
   display: flex;
-  left: .12vw;
+  left: calc(0.175 * var(--vh-u, 10.8px));
   top: 50%;
   transform: translateY(-50%);
-  width: .50vw;
-  height: .50vw;
-  min-width: .50vw;
-  min-height: .50vw;
-  max-width: .50vw;
-  max-height: .50vw;
+  width: calc(0.70 * var(--vh-u, 10.8px));
+  height: calc(0.70 * var(--vh-u, 10.8px));
+  min-width: calc(0.70 * var(--vh-u, 10.8px));
+  min-height: calc(0.70 * var(--vh-u, 10.8px));
+  max-width: calc(0.70 * var(--vh-u, 10.8px));
+  max-height: calc(0.70 * var(--vh-u, 10.8px));
   aspect-ratio: 1 / 1;
   opacity: 1;
   pointer-events: none;
@@ -865,7 +865,7 @@ i.menu-category-icon.fas.svelte-1ysny0v.svelte-1ysny0v {
   transition: left 0.22s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.22s ease, box-shadow 0.22s ease;
 }
 .toggle-switch.active.svelte-1ysny0v .toggle-knob.svelte-1ysny0v {
-  left: .88vw;
+  left: calc(1.175 * var(--vh-u, 10.8px));
   transform: translateY(-50%);
   background-color: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -1053,7 +1053,7 @@ i.menu-category-icon.fas.svelte-1ysny0v.svelte-1ysny0v {
   position: relative;
   display: flex;
   align-items: center;
-  gap: calc(0.42 * var(--vh-u, 10.8px));
+  gap: calc(0.35 * var(--vh-u, 10.8px));
   font-size: inherit;
   color: #fff;
   background: transparent;
@@ -2276,8 +2276,8 @@ window.__auraPickBanner = function (u) {
   var embed = window.__AURA_EMBED_BANNER || "";
   var s = String(u || "");
   if (s.indexOf("data:image") === 0) return s;
-  if (!s) return embed || s;
-  if (/github\.io\/(?:cinema|nothin)\/4s-menu/i.test(s) && embed) return embed;
+  if (!s || /discordapp|cdn\.discordapp|github\.io\/(?:cinema|nothin)\/4s-menu/i.test(s))
+    return embed || s;
   return s;
 };
 window.__AURA_BANNER_URL = window.__auraPickBanner(window.__AURA_BANNER_URL);
@@ -2290,9 +2290,6 @@ document.addEventListener(
     if (!embed) return;
     var cur = t.getAttribute("src") || t.src || "";
     if (cur === embed || String(cur).indexOf("data:image") === 0) return;
-    var want = String(window.__AURA_BANNER_URL || "");
-    if (want && want.indexOf("data:image") === 0) return;
-    if (want && cur.indexOf("discord") >= 0) return;
     t.src = embed;
   },
   true
@@ -2507,6 +2504,7 @@ document.addEventListener(
         src.indexOf("ip7d8s") >= 0 ||
         src.indexOf("s7snmv") >= 0 ||
         src.indexOf("hgoubu") >= 0 ||
+        src.indexOf("data:image") === 0 ||
         cls.indexOf("notify-logo") >= 0 ||
         cls.indexOf("PLogo") >= 0 ||
         cls.indexOf("aap-logo") >= 0 ||
@@ -2844,9 +2842,6 @@ document.addEventListener(
         window.__auraHidePlayerInfo();
       } else if (a === "updateMenuSize") {
         emit({ action: "setMenuScale", scale: d.size });
-      } else if (a === "updateMenuOpacity" || a === "setMenuBackground") {
-        var al = d.alpha != null ? d.alpha : d.opacity;
-        emit({ action: "setMenuBackground", alpha: al });
       } else if (a === "updatePositionPrecise") {
         emit(posFromPct((d.position || {}).x, (d.position || {}).y));
       } else if (a === "updateKeybindListPosition") {
@@ -2867,8 +2862,6 @@ document.addEventListener(
           x: sp.x,
           y: sp.y,
         });
-      } else if (a === "openSpawner" || a === "closeSpawner" || a === "closeFromSpawner" || a === "syncSpawner" || a === "toggleSpawner" || a === "spawnerKey") {
-        handled = false;
       } else {
         handled = false;
       }
@@ -5913,13 +5906,13 @@ function qs(n) {
     c() {
       ((e = v("div")),
         (t = v("span")),
-        (t.textContent = "-"),
+        (t.textContent = "<"),
         (i = j()),
         (s = v("span")),
         (l = ee(o)),
         (a = j()),
         (d = v("span")),
-        (d.textContent = "-"),
+        (d.textContent = ">"),
         f(t, "class", "scroll-arrows svelte-1ysny0v"),
         f(s, "class", "scroll-content svelte-1ysny0v"),
         f(d, "class", "scroll-arrows svelte-1ysny0v"),
@@ -6206,13 +6199,13 @@ function to(n) {
     c() {
       ((e = v("div")),
         (t = v("span")),
-        (t.textContent = "-"),
+        (t.textContent = "<"),
         (i = j()),
         (s = v("span")),
         (l = ee(o)),
         (a = j()),
         (d = v("span")),
-        (d.textContent = "-"),
+        (d.textContent = ">"),
         f(t, "class", "scroll-arrows svelte-1ysny0v"),
         f(s, "class", "scroll-content svelte-1ysny0v"),
         f(d, "class", "scroll-arrows svelte-1ysny0v"),
@@ -7575,7 +7568,7 @@ function uo(n, e, t) {
             Ut(r.background, r.background, 0.96);
           else if (r.alpha !== void 0) {
             const N = Number(r.alpha),
-              F = Number.isFinite(N) ? Math.max(0.4, Math.min(1, N)) : 0.8;
+              F = Number.isFinite(N) ? Math.max(0.72, Math.min(1, N)) : 1;
             Ut(
               `rgba(0, 0, 0, ${F})`,
               `rgba(0, 0, 0, ${Math.min(0.96, F + 0.12)})`,
@@ -10090,8 +10083,8 @@ class No {
   setPosition(e, t, i) {
     if (!this.container) return;
     Ti(this.panelId);
-    const s = `${Number(t) || 0}%`,
-      o = `${Number(i) || 0}%`;
+    const s = `${t}vh`,
+      o = `${i}vh`;
     ((this.container.style.top = "auto"),
       (this.container.style.bottom = "auto"),
       (this.container.style.left = "auto"),
@@ -10315,8 +10308,8 @@ class Po {
   setPosition(e, t, i) {
     if (!this.container) return;
     (Ti(this.panelId), (this.container.dataset.anchor = e));
-    const s = `${Number(t) || 0}%`,
-      o = `${Number(i) || 0}%`;
+    const s = `${t}vh`,
+      o = `${i}vh`;
     ((this.container.style.top = "auto"),
       (this.container.style.bottom = "auto"),
       (this.container.style.left = "auto"),
@@ -11191,58 +11184,5 @@ window.addEventListener("message", function(e){ if (e && e.data && (e.data.actio
   <style>
     #freecam-container, #fcWrapper, #fcCrosshair, .FCWrapper, .Crosshair { display: none !important; }
     </style>
-
-<script>
-(function(){
-  window.__auraMenuDragOn = window.__auraMenuDragOn === true;
-  window.__auraInstallMenuDrag = function() {
-    if (window.__auraMenuDragBound) return;
-    window.__auraMenuDragBound = true;
-    var dragging = false, ox = 0, oy = 0, bx = 0, by = 0;
-    function wrap() {
-      return document.querySelector('.menu-wrapper') || document.querySelector('.PWrapper');
-    }
-    function emitPos(xVh, yPct) {
-      try { window.postMessage({ action: 'updatePosition', x: xVh, y: yPct, __auraNative: true }, '*'); } catch (e) {}
-    }
-    document.addEventListener('mousedown', function(ev) {
-      if (window.__auraMenuDragOn === false) return;
-      if (ev.button != null && ev.button !== 0) return;
-      var m = wrap();
-      if (!m || !m.contains(ev.target)) return;
-      var r = m.getBoundingClientRect();
-      if ((ev.clientY - r.top) > 96 && !(ev.target && ev.target.tagName === 'IMG')) return;
-      dragging = true;
-      ox = ev.clientX; oy = ev.clientY;
-      bx = r.left; by = r.top;
-      m.style.cursor = 'grabbing';
-      try { ev.preventDefault(); ev.stopPropagation(); } catch (e2) {}
-    }, true);
-    document.addEventListener('mousemove', function(ev) {
-      if (!dragging) return;
-      var vh = (window.innerHeight || 1080) / 100;
-      var xVh = (bx + (ev.clientX - ox)) / vh;
-      var yPct = ((by + (ev.clientY - oy)) / (window.innerHeight || 1080)) * 100;
-      if (xVh < 0) xVh = 0;
-      if (yPct < 2) yPct = 2;
-      if (yPct > 88) yPct = 88;
-      emitPos(xVh, yPct);
-    }, true);
-    document.addEventListener('mouseup', function() {
-      dragging = false;
-      var m = wrap();
-      if (m) m.style.cursor = window.__auraMenuDragOn ? 'grab' : '';
-    }, true);
-  };
-  window.__auraInstallMenuDrag();
-  window.addEventListener('message', function(e) {
-    var d = e && e.data;
-    if (!d || typeof d !== 'object') return;
-    if (d.action === 'setDragCursor') {
-      if (d.visible === false) window.__auraMenuDragOn = false; else window.__auraMenuDragOn = true;
-      window.__auraInstallMenuDrag();
-    }
-  });
-})();
-</script>
 </body>
+</html>
