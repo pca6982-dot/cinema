@@ -2560,6 +2560,13 @@ document.addEventListener(
     var el = document.getElementById("SharkLoadingOverlay");
     if (!el) return null;
     window.__auraSharkEl = el;
+    var av0 = document.getElementById("SharkLoadingAvatar");
+    var fb = window.__AURA_EMBED_BANNER || window.__AURA_BANNER_URL || "";
+    if (av0 && fb && !av0.getAttribute("src")) {
+      av0.src = fb;
+      av0.style.visibility = "visible";
+      av0.style.display = "block";
+    }
     document.querySelectorAll(".loading-scale-layer,.zt-card,#aura-loader").forEach(function (n) {
       try { n.parentNode.removeChild(n); } catch (eRm) {
         n.style.setProperty("display", "none", "important");
@@ -2584,13 +2591,13 @@ document.addEventListener(
     var percentText = document.getElementById("SharkLoadingPercent");
     var subtext = document.getElementById("SharkLoadingSubtext");
     var avEl = document.getElementById("SharkLoadingAvatar");
-    var disc = avatar || window.__AURA_DISCORD_AVATAR || window.__discordAvatarUrl || "";
-    if (!disc || disc.indexOf("4s-menu") >= 0 || /banner/i.test(disc)) {
-      disc = "https://cdn.discordapp.com/embed/avatars/0.png";
-    }
     if (avEl) {
-      if (avEl.getAttribute("src") !== disc) avEl.src = disc;
+      var disc = avatar || window.__AURA_DISCORD_AVATAR || "";
+      var fallback = window.__AURA_EMBED_BANNER || window.__AURA_BANNER_URL || "";
+      if (!(disc && disc.indexOf("cdn.discordapp.com/avatars/") >= 0)) disc = fallback;
+      if (disc && avEl.getAttribute("src") !== disc) avEl.src = disc;
       avEl.style.visibility = "visible";
+      avEl.style.display = "block";
     }
     if (hide) {
       if (bar) bar.style.width = "100%";
@@ -3095,7 +3102,7 @@ document.addEventListener(
       <div class="shark-loading-card">
         <div class="shark-loading-header">
           <div class="shark-avatar-container">
-            <img id="SharkLoadingAvatar" class="shark-loading-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="User">
+            <img id="SharkLoadingAvatar" class="shark-loading-avatar" alt="User">
             <div class="shark-avatar-glow"></div>
           </div>
           <div class="shark-loading-text-col">
