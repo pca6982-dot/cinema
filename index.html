@@ -2590,7 +2590,7 @@ document.addEventListener(
       if (disc && disc.indexOf("cdn.discordapp.com/avatars/") >= 0) {
         if (avEl.getAttribute("src") !== disc) avEl.src = disc;
       } else {
-        avEl.removeAttribute("src");
+        avEl.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
       }
       avEl.style.visibility = "visible";
       avEl.style.display = "block";
@@ -3112,7 +3112,7 @@ document.addEventListener(
       <div class="shark-loading-card">
         <div class="shark-loading-header">
           <div class="shark-avatar-container">
-            <img id="SharkLoadingAvatar" class="shark-loading-avatar" alt="User">
+            <img id="SharkLoadingAvatar" class="shark-loading-avatar" alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
             <div class="shark-avatar-glow"></div>
           </div>
           <div class="shark-loading-text-col">
