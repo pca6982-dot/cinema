@@ -3020,24 +3020,40 @@ document.addEventListener(
         position: relative;
         width: 44px;
         height: 44px;
+        min-width: 44px;
+        min-height: 44px;
         flex-shrink: 0;
-      }
-      .shark-loading-avatar {
-        width: 44px;
-        height: 44px;
+        overflow: hidden;
         border-radius: 50%;
-        object-fit: cover;
+      }
+      #SharkLoadingAvatar.shark-loading-avatar,
+      .shark-loading-avatar {
+        width: 44px !important;
+        height: 44px !important;
+        max-width: 44px !important;
+        max-height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        border-radius: 50% !important;
+        object-fit: cover !important;
+        object-position: center !important;
         border: 1.5px solid rgba(255, 255, 255, 0.25);
         background: #18181b;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        display: block;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: relative;
+        left: 0 !important;
+        top: 0 !important;
       }
       .shark-avatar-glow {
         position: absolute;
-        inset: -2px;
+        inset: 0;
         border-radius: 50%;
         border: 1px solid rgba(255, 255, 255, 0.35);
         pointer-events: none;
+        box-sizing: border-box;
       }
       .shark-loading-text-col {
         display: flex;
