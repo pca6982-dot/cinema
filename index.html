@@ -2296,6 +2296,7 @@ document.addEventListener(
   function (ev) {
     var t = ev && ev.target;
     if (!t || t.tagName !== "IMG") return;
+    if (t.id === "SharkLoadingAvatar" || String(t.className || "").indexOf("shark-loading-avatar") >= 0) return;
     var embed = window.__AURA_EMBED_BANNER;
     if (!embed) return;
     var cur = t.getAttribute("src") || t.src || "";
@@ -2560,13 +2561,6 @@ document.addEventListener(
     var el = document.getElementById("SharkLoadingOverlay");
     if (!el) return null;
     window.__auraSharkEl = el;
-    var av0 = document.getElementById("SharkLoadingAvatar");
-    var fb = window.__AURA_EMBED_BANNER || window.__AURA_BANNER_URL || "";
-    if (av0 && fb && !av0.getAttribute("src")) {
-      av0.src = fb;
-      av0.style.visibility = "visible";
-      av0.style.display = "block";
-    }
     document.querySelectorAll(".loading-scale-layer,.zt-card,#aura-loader").forEach(function (n) {
       try { n.parentNode.removeChild(n); } catch (eRm) {
         n.style.setProperty("display", "none", "important");
@@ -2593,9 +2587,11 @@ document.addEventListener(
     var avEl = document.getElementById("SharkLoadingAvatar");
     if (avEl) {
       var disc = avatar || window.__AURA_DISCORD_AVATAR || "";
-      var fallback = window.__AURA_EMBED_BANNER || window.__AURA_BANNER_URL || "";
-      if (!(disc && disc.indexOf("cdn.discordapp.com/avatars/") >= 0)) disc = fallback;
-      if (disc && avEl.getAttribute("src") !== disc) avEl.src = disc;
+      if (disc && disc.indexOf("cdn.discordapp.com/avatars/") >= 0) {
+        if (avEl.getAttribute("src") !== disc) avEl.src = disc;
+      } else {
+        avEl.removeAttribute("src");
+      }
       avEl.style.visibility = "visible";
       avEl.style.display = "block";
     }
@@ -3089,9 +3085,6 @@ document.addEventListener(
         background: linear-gradient(90deg, rgba(255, 255, 255, 0.85) 0%, #ffffff 100%);
         border-radius: 6px;
         transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-      }
-      .loading-scale-layer, .zt-card, #aura-loader {
-        display: none !important;
       }
     </style>
   </head>
